@@ -1,0 +1,603 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HKBU Campus Bistro | Fine Dining</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700&family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --bg-dark: #0f1012;
+            --bg-panel: #1a1a1c;
+            --gold: #D4AF37;
+            --gold-dim: #8a7020;
+            --text-light: #f0f0f0;
+            --text-gray: #a0a0a0;
+
+            --font-head: 'Playfair Display', serif;
+            --font-body: 'Lato', sans-serif;
+
+            --transition: all 0.4s ease;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            background-color: var(--bg-dark);
+            color: var(--text-light);
+            font-family: var(--font-body);
+            line-height: 1.8;
+            overflow-x: hidden;
+        }
+
+        /* Global background image for non-video sections */
+        .bg-image-section {
+            position: relative;
+            background-image: url('CF.png');
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            background-attachment: fixed;
+        }
+
+        /* Dark overlay for readability */
+        .bg-image-section::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(15, 16, 18, 0.85);
+            z-index: 0;
+        }
+
+        /* Ensure content stays above overlay */
+        .bg-image-section > * {
+            position: relative;
+            z-index: 1;
+        }
+
+        a { text-decoration: none; transition: var(--transition); }
+
+
+        .hero {
+            height: 100vh; /* 全屏高度 */
+            width: 100%;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            overflow: hidden;
+        }
+
+        /* 视频容器 */
+        .video-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+        }
+
+        /* 视频本体：保证覆盖全屏且不变形 */
+        .video-container video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover; /* 关键属性：裁剪视频以填满屏幕 */
+        }
+
+        /* 黑色遮罩：必须有，否则看不清字 */
+        .video-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5); /* 50% 黑色透明度 */
+            z-index: 1;
+        }
+
+        /* Smooth transition gradient at bottom of hero - enhanced multi-layer blend */
+        .hero-transition {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 350px;
+            background: linear-gradient(
+                to bottom,
+                transparent 0%,
+                rgba(15, 16, 18, 0.05) 15%,
+                rgba(15, 16, 18, 0.15) 30%,
+                rgba(15, 16, 18, 0.35) 45%,
+                rgba(15, 16, 18, 0.55) 60%,
+                rgba(15, 16, 18, 0.75) 75%,
+                rgba(15, 16, 18, 0.9) 88%,
+                rgba(15, 16, 18, 1) 100%
+            );
+            z-index: 2;
+            pointer-events: none;
+        }
+
+        /* Additional blur layer for smoother video-to-bg transition */
+        .hero-blur-fade {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 180px;
+            background: linear-gradient(
+                to bottom,
+                transparent 0%,
+                rgba(15, 16, 18, 0.4) 100%
+            );
+            backdrop-filter: blur(0px);
+            -webkit-backdrop-filter: blur(0px);
+            mask-image: linear-gradient(to bottom, transparent 0%, black 100%);
+            -webkit-mask-image: linear-gradient(to bottom, transparent 0%, black 100%);
+            z-index: 2;
+            pointer-events: none;
+        }
+
+        /* Soft glow effect at transition point */
+        .hero::after {
+            content: '';
+            position: absolute;
+            bottom: -50px;
+            left: 0;
+            width: 100%;
+            height: 100px;
+            background: radial-gradient(
+                ellipse 100% 80% at 50% 0%,
+                rgba(15, 16, 18, 0.8) 0%,
+                transparent 70%
+            );
+            z-index: 3;
+            pointer-events: none;
+        }
+
+        .hero-content {
+            position: relative;
+            z-index: 2; /* 放在最上层 */
+            max-width: 900px;
+            padding: 0 20px;
+            animation: fadeIn 1.5s ease-out;
+        }
+
+        .hero-subtitle {
+            color: var(--gold);
+            text-transform: uppercase;
+            letter-spacing: 5px;
+            font-size: 0.9rem;
+            margin-bottom: 25px;
+            display: block;
+            text-shadow: 0 2px 10px rgba(0,0,0,0.8);
+        }
+
+        .hero h1 {
+            font-family: var(--font-head);
+            font-size: 4.5rem;
+            color: var(--text-light);
+            margin-bottom: 30px;
+            line-height: 1.1;
+            text-shadow: 0 4px 20px rgba(0,0,0,0.8);
+        }
+
+        .hero p {
+            font-size: 1.2rem;
+            color: rgba(255,255,255,0.9);
+            margin-bottom: 50px;
+            font-weight: 300;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .cta-btn {
+            display: inline-block;
+            padding: 16px 40px;
+            background-color: var(--gold);
+            color: #000;
+            font-family: var(--font-head);
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-size: 0.9rem;
+            border: 1px solid var(--gold);
+        }
+
+        .cta-btn:hover {
+            background-color: transparent;
+            color: var(--gold);
+            box-shadow: 0 0 30px rgba(212, 175, 55, 0.3);
+        }
+
+        .scroll-hint {
+            margin-top: 60px;
+            font-size: 0.85rem;
+            color: rgba(212, 175, 55, 0.6);
+            letter-spacing: 2px;
+            animation: bounce 2s ease-in-out infinite;
+        }
+
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); opacity: 0.6; }
+            50% { transform: translateY(8px); opacity: 1; }
+        }
+
+        .section-padding { padding: 100px 10%; }
+
+        .about-section {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 60px;
+            align-items: center;
+        }
+
+        .about-text h2 {
+            font-family: var(--font-head);
+            font-size: 2.5rem;
+            color: var(--gold);
+            margin-bottom: 25px;
+        }
+
+        .about-text p { color: var(--text-gray); margin-bottom: 20px; font-size: 1.05rem; }
+
+        .about-image {
+            height: 400px;
+            background-image: url('enews1.jpg');
+            background-size: cover;
+            background-position: center;
+            filter: sepia(20%) brightness(0.8);
+            border: 1px solid var(--gold-dim);
+            position: relative;
+        }
+        .about-image::after {
+            content: '';
+            position: absolute;
+            top: 20px; left: 20px; right: -20px; bottom: -20px;
+            border: 1px solid var(--gold);
+            z-index: -1;
+        }
+
+
+        .menu-preview { text-align: center; }
+
+        .section-header { margin-bottom: 60px; }
+        .section-header h3 { color: var(--gold); font-size: 0.9rem; text-transform: uppercase; letter-spacing: 3px; }
+        .section-header h2 { font-family: var(--font-head); font-size: 3rem; margin-top: 10px; }
+
+        .dishes-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 40px;
+        }
+
+        .dish-card { text-align: left; }
+        .dish-img-box { height: 350px; overflow: hidden; margin-bottom: 25px; border-bottom: 2px solid var(--gold); }
+        .dish-img-box img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.6s ease; }
+        .dish-card:hover .dish-img-box img { transform: scale(1.1); }
+        .dish-title { font-family: var(--font-head); font-size: 1.5rem; margin-bottom: 10px; color: var(--text-light); }
+        .dish-price { color: var(--gold); font-family: var(--font-head); font-size: 1.2rem; font-weight: 700; }
+
+
+        footer {
+            padding: 80px 10% 40px 10%;
+            text-align: center;
+            border-top: 1px solid rgba(212, 175, 55, 0.2);
+        }
+
+        .footer-brand {
+            margin-bottom: 40px;
+        }
+
+
+        .footer-logos {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 40px;
+            margin-bottom: 30px;
+        }
+
+        .footer-logos img {
+            height: 70px;
+            filter: grayscale(1) brightness(1.5); /* 统一风格 */
+            opacity: 0.8;
+            transition: opacity 0.3s;
+        }
+
+        .footer-logos img:hover { opacity: 1; filter: none; }
+
+        .footer-title h1 {
+            font-family: var(--font-head);
+            font-size: 2.5rem;
+            color: var(--gold);
+            letter-spacing: 2px;
+            margin-bottom: 10px;
+        }
+
+        .footer-tagline {
+            color: var(--text-gray);
+            font-style: italic;
+            font-family: var(--font-head);
+            font-size: 1.1rem;
+        }
+
+
+        /* Animations */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Team Section Styles */
+        .team-section {
+            text-align: center;
+        }
+
+        .team-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 30px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .team-card {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(212, 175, 55, 0.2);
+            border-radius: 8px;
+            padding: 30px 20px;
+            transition: var(--transition);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .team-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: var(--gold);
+            transform: scaleX(0);
+            transition: transform 0.4s ease;
+        }
+
+        .team-card:hover {
+            background: rgba(255, 255, 255, 0.06);
+            transform: translateY(-5px);
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+        }
+
+        .team-card:hover::before {
+            transform: scaleX(1);
+        }
+
+        .team-avatar {
+            width: 80px;
+            height: 80px;
+            background: linear-gradient(135deg, var(--gold) 0%, var(--gold-dim) 100%);
+            border-radius: 50%;
+            margin: 0 auto 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: var(--font-head);
+            font-size: 1.8rem;
+            color: #000;
+            font-weight: 700;
+        }
+
+        .team-name {
+            font-family: var(--font-head);
+            font-size: 1.3rem;
+            color: var(--text-light);
+            margin-bottom: 8px;
+        }
+
+        .team-id {
+            font-size: 0.85rem;
+            color: var(--text-gray);
+            margin-bottom: 15px;
+            letter-spacing: 1px;
+        }
+
+        .role-badge {
+            display: inline-block;
+            padding: 6px 16px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .role-developer {
+            background: rgba(255, 152, 0, 0.15);
+            color: #FF9800;
+            border: 1px solid rgba(255, 152, 0, 0.3);
+        }
+
+        .role-pm {
+            background: rgba(33, 150, 243, 0.15);
+            color: #2196F3;
+            border: 1px solid rgba(33, 150, 243, 0.3);
+        }
+
+        .role-analyst {
+            background: rgba(76, 175, 80, 0.15);
+            color: #4CAF50;
+            border: 1px solid rgba(76, 175, 80, 0.3);
+        }
+
+        .role-tester {
+            background: rgba(244, 67, 54, 0.15);
+            color: #F44336;
+            border: 1px solid rgba(244, 67, 54, 0.3);
+        }
+
+        @media (max-width: 992px) {
+            .team-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 768px) {
+            .hero h1 { font-size: 3rem; }
+            .about-section { grid-template-columns: 1fr; }
+            .footer-logos { flex-direction: column; gap: 20px; }
+            .team-grid {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+            .team-card {
+                padding: 25px 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<section class="hero">
+    <div class="video-container">
+        <video muted autoplay loop playsinline poster="Braised.jpeg">
+            <source src="cooking.mp4" type="video/mp4">
+            Your browser does not support the video tag.
+        </video>
+    </div>
+
+    <div class="video-overlay"></div>
+    <div class="hero-transition"></div>
+    <div class="hero-blur-fade"></div>
+
+    <div class="hero-content">
+        <span class="hero-subtitle">Est. 2026 • COMP7780 Hong Kong Baptist University</span>
+        <h1>The Art of<br>Campus Dining</h1>
+        <p>Experience the heritage of Hakka cuisine and Cantonese classics, reimagined for the modern scholar.</p>
+
+        <a href="/product" class="cta-btn">Enter & Reserve</a>
+        <p class="scroll-hint">▼ Scroll down to explore more ▼</p>
+    </div>
+</section>
+
+<section class="section-padding about-section bg-image-section">
+    <div class="about-text">
+        <h2>A Culinary Sanctuary</h2>
+        <p>Welcome to <strong>HKBU Campus Bistro</strong>. Nestled within the heart of the university, we are not just a cafeteria, but a destination.</p>
+        <p>Our philosophy is simple: to honor traditional flavors while providing nutritious, high-quality meals that fuel the minds of our future leaders. From our slow-braised pork belly to our wok-fired beef, every dish tells a story of patience and precision.</p>
+    </div>
+    <div class="about-image"></div>
+</section>
+
+<section class="section-padding menu-preview bg-image-section">
+    <div class="section-header">
+        <h3>Selected for You</h3>
+        <h2>Chef's Recommendations</h2>
+    </div>
+
+    <div class="dishes-grid">
+        <div class="dish-card">
+            <div class="dish-img-box"><img src="Braised.jpeg" alt="Braised Pork"></div>
+            <div class="dish-title">Hakka Braised Pork</div>
+            <div class="dish-price">$66</div>
+        </div>
+        <div class="dish-card">
+            <div class="dish-img-box"><img src="bbq.jpg" alt="Char Siu"></div>
+            <div class="dish-title">Honey Glazed Char Siu</div>
+            <div class="dish-price">$56</div>
+        </div>
+        <div class="dish-card">
+            <div class="dish-img-box"><img src="Beef.jpg" alt="Beef"></div>
+            <div class="dish-title">Wok-Fried Beef</div>
+            <div class="dish-price">$78</div>
+        </div>
+    </div>
+
+    <div style="margin-top: 60px;">
+        <a href="/product" class="cta-btn" style="background:transparent; color:var(--gold);">Explore Full Menu</a>
+    </div>
+</section>
+
+<!-- Team Section -->
+<section class="section-padding team-section bg-image-section">
+    <div class="section-header">
+        <h3 style="font-size: 1.4rem; letter-spacing: 2.5px; font-weight: 500;">
+    Vitality · Team 3
+</h3>
+        <h2>Meet Our Team</h2>
+    </div>
+
+    <div class="team-grid">
+        <div class="team-card">
+            <div class="team-avatar">YY</div>
+            <div class="team-name">YANG Yanhang</div>
+            <div class="team-id">SID: 25409220</div>
+            <span class="role-badge role-pm">Project Manager</span>
+        </div>
+
+        <div class="team-card">
+            <div class="team-avatar">WF</div>
+            <div class="team-name">WU Feiyang</div>
+            <div class="team-id">SID: 25418491</div>
+            <span class="role-badge role-developer">Developer</span>
+        </div>
+
+        <div class="team-card">
+            <div class="team-avatar">ZZ</div>
+            <div class="team-name">ZHU Zhaoting</div>
+            <div class="team-id">SID: 25443631</div>
+            <span class="role-badge role-developer">Developer</span>
+        </div>
+
+        <div class="team-card">
+            <div class="team-avatar">ZX</div>
+            <div class="team-name">ZHANG Xingjian</div>
+            <div class="team-id">SID: 25401556</div>
+            <span class="role-badge role-analyst">Analyst</span>
+        </div>
+
+        <div class="team-card">
+            <div class="team-avatar">LC</div>
+            <div class="team-name">LI Cuijie</div>
+            <div class="team-id">SID: 25434837</div>
+            <span class="role-badge role-analyst">Analyst</span>
+        </div>
+
+        <div class="team-card">
+            <div class="team-avatar">CH</div>
+            <div class="team-name">CHEN Hongshen</div>
+            <div class="team-id">SID: 25450913</div>
+            <span class="role-badge role-tester">Tester</span>
+        </div>
+    </div>
+</section>
+
+<footer class="bg-image-section">
+    <div class="footer-brand">
+        <div class="footer-logos">
+            <img src="logo.png" alt="HKBU Logo">
+            <img src="cs_logo.png" alt="CS Logo">
+        </div>
+        <div class="footer-title">
+            <h1>HKBU CAMPUS BISTRO</h1>
+        </div>
+        <p class="footer-tagline">Where Tradition Meets Excellence.</p>
+    </div>
+
+    <div class="footer-copyright">
+        <p style="margin-top: 30px; color: #555; font-size: 0.85rem;">&copy; COMP7780 · 2026 HKBU Campus Bistro. All rights reserved.</p>
+    </div>
+</footer>
+
+</body>
+</html>
