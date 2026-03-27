@@ -15,8 +15,8 @@ db.connect((err) => {
         if (err) { console.error('Query failed:', err.message); return; }
         if (rows.length === 0) { console.log('No orders yet.'); return; }
 
-        const sep = '+----------+----------+------------------------+----------+--------+--------+---------------------+';
-        const header = '| order_id | identity | product_name           | quantity |  price |  total | order_time          |';
+        const sep = '+----------+----------+------------------------+----------+--------+--------+---------+---------------------+';
+        const header = '| order_id | identity | product_name           | quantity |  price |  total | status  | order_time          |';
 
         // Group rows by order_id
         const groups = {};
@@ -38,12 +38,14 @@ db.connect((err) => {
                 const qty      = String(r.quantity).padStart(8);
                 const price    = Number(r.price).toFixed(2).padStart(6);
                 const total    = Number(r.total).toFixed(2).padStart(6);
+                const status   = i === 0 ? (r.payment_status || 'Paid').padEnd(7) : '       ';
                 const time     = i === 0 ? r.order_time.toISOString().replace('T',' ').slice(0,19) : '                   ';
-                console.log(`| ${orderId} | ${identity} | ${name} | ${qty} | ${price} | ${total} | ${time} |`);
+                console.log(`| ${orderId} | ${identity} | ${name} | ${qty} | ${price} | ${total} | ${status} | ${time} |`);
                 orderTotal += Number(r.total);
             });
             // Total row
-            const totalStr = `ORDER TOTAL: $${orderTotal.toFixed(2)}`;
+            const status = items[0].payment_status || 'Paid';
+            const totalStr = `ORDER TOTAL: $${orderTotal.toFixed(2)}   [${status}]`;
             console.log(`| ${totalStr.padEnd(sep.length - 4)} |`);
             console.log(sep);
         });

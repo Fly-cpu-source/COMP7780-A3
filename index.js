@@ -59,10 +59,11 @@ app.post('/order', (req, res) => {
             item.name,
             item.quantity,
             item.price,
-            item.quantity * item.price
+            item.quantity * item.price,
+            'Paid'
         ]);
 
-        const sql = 'INSERT INTO orders (order_id, identity, product_name, quantity, price, total) VALUES ?';
+        const sql = 'INSERT INTO orders (order_id, identity, product_name, quantity, price, total, payment_status) VALUES ?';
 
         db.query(sql, [values], (err) => {
             if (err) {

@@ -681,6 +681,7 @@
             .dish-info { width: 100%; }
         }
     </style>
+    <script src="https://www.paypal.com/sdk/js?client-id=ATikMUrZElhOyEC8czg9w6BrRZff4L5yHVpot9uCTBGCZP4eghgQ-EmEvB8_TMlF2YNfd2TJlnrAwTo6&currency=USD&locale=en_US"></script>
 </head>
 <body>
 
@@ -688,7 +689,7 @@
     <div class="brand-area">
         <h1>CAMPUS BISTRO</h1>
     </div>
-    <a href="comp7780_home.html" class="back-link">← Return to Lobby</a>
+    <a href="/" class="back-link">← Return to Lobby</a>
 </header>
 
 <main>
@@ -835,9 +836,9 @@
             Total: $<span id="modal-total">0</span>
         </div>
 
-        <div class="modal-actions">
+        <div class="modal-actions" style="flex-direction: column; align-items: stretch;">
+            <div id="paypal-button-container" style="margin-bottom: 12px;"></div>
             <button class="btn-cancel" onclick="closeModal('checkout-modal')">Modify</button>
-            <button class="btn-confirm" onclick="confirmSuccess()">Confirm & Pay</button>
         </div>
     </div>
 </div>
@@ -974,13 +975,15 @@
         document.getElementById('modal-total').innerText = total;
 
         document.getElementById('checkout-modal').style.display = 'flex';
+        renderPayPalButton();
     }
 
     function closeModal(id) {
         document.getElementById(id).style.display = 'none';
     }
 
-    function confirmSuccess() {
+    // Save order to MySQL and show success modal
+    function saveOrderAndConfirm() {
         const customer = document.getElementById('customer-select').value;
         const items = cart.map(item => ({
             name: item.name,
@@ -996,11 +999,7 @@
         .then(res => res.json())
         .then(data => {
             closeModal('checkout-modal');
-            if (data.success) {
-                document.getElementById('order-id-display').innerText = 'Order ID: #' + data.orderId;
-            } else {
-                document.getElementById('order-id-display').innerText = '';
-            }
+            document.getElementById('order-id-display').innerText = data.success ? 'Order ID: #' + data.orderId : '';
             document.getElementById('success-modal').style.display = 'flex';
         })
         .catch(() => {
@@ -1008,6 +1007,43 @@
             document.getElementById('order-id-display').innerText = '';
             document.getElementById('success-modal').style.display = 'flex';
         });
+    }
+
+    // Render PayPal button when modal opens
+    let paypalRendered = false;
+    function renderPayPalButton() {
+        if (paypalRendered) return;
+        paypalRendered = true;
+
+        paypal.Buttons({
+            style: {
+                color: 'gold',
+                shape: 'rect',
+                label: 'pay',
+                height: 45
+            },
+            createOrder: function(data, actions) {
+                const total = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
+                return actions.order.create({
+                    purchase_units: [{
+                        description: 'HKBU Campus Bistro Order',
+                        amount: {
+                            value: total.toFixed(2),
+                            currency_code: 'USD'
+                        }
+                    }]
+                });
+            },
+            onApprove: function(data, actions) {
+                return actions.order.capture().then(function() {
+                    saveOrderAndConfirm();
+                });
+            },
+            onError: function(err) {
+                alert('Payment failed. Please try again.');
+                console.error(err);
+            }
+        }).render('#paypal-button-container');
     }
 
     function resetAll() {
