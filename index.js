@@ -36,7 +36,7 @@ app.get('/product', (req, res) => {
     res.sendFile(path.join(__dirname, 'comp7780_product.html'));
 });
 
-// Place order — insert each item as a row with a shared order_id
+// Place order — prices looked up from products table, not trusted from frontend
 app.post('/order', (req, res) => {
     const { customer, items } = req.body;
 
@@ -44,33 +44,48 @@ app.post('/order', (req, res) => {
         return res.status(400).json({ success: false, message: 'Invalid order data.' });
     }
 
-    // Get current max order_id, then use max+1 as the new order_id
-    db.query('SELECT IFNULL(MAX(order_id), 0) AS maxId FROM orders', (err, rows) => {
+    // Look up all product prices from DB
+    db.query('SELECT name, price FROM products', (err, products) => {
         if (err) {
-            console.error('Query failed:', err.message);
+            console.error('Products query failed:', err.message);
             return res.status(500).json({ success: false, message: 'Database error.' });
         }
 
-        const newOrderId = rows[0].maxId + 1;
+        // Build a price map from DB
+        const priceMap = {};
+        products.forEach(p => { priceMap[p.name] = parseFloat(p.price); });
 
-        const values = items.map(item => [
-            newOrderId,
-            customer,
-            item.name,
-            item.quantity,
-            item.price,
-            item.quantity * item.price,
-            'Paid'
-        ]);
+        // Validate all items exist in products table
+        for (const item of items) {
+            if (priceMap[item.name] === undefined) {
+                return res.status(400).json({ success: false, message: `Unknown product: ${item.name}` });
+            }
+        }
 
-        const sql = 'INSERT INTO orders (order_id, identity, product_name, quantity, price, total, payment_status) VALUES ?';
-
-        db.query(sql, [values], (err) => {
+        // Get next order_id
+        db.query('SELECT IFNULL(MAX(order_id), 0) AS maxId FROM orders', (err, rows) => {
             if (err) {
-                console.error('Insert failed:', err.message);
+                console.error('Query failed:', err.message);
                 return res.status(500).json({ success: false, message: 'Database error.' });
             }
-            res.json({ success: true, orderId: newOrderId });
+
+            const newOrderId = rows[0].maxId + 1;
+
+            // Use DB price, ignore frontend price
+            const values = items.map(item => {
+                const price = priceMap[item.name];
+                return [newOrderId, customer, item.name, item.quantity, price, item.quantity * price, 'Paid'];
+            });
+
+            const sql = 'INSERT INTO orders (order_id, identity, product_name, quantity, price, total, payment_status) VALUES ?';
+
+            db.query(sql, [values], (err) => {
+                if (err) {
+                    console.error('Insert failed:', err.message);
+                    return res.status(500).json({ success: false, message: 'Database error.' });
+                }
+                res.json({ success: true, orderId: newOrderId });
+            });
         });
     });
 });

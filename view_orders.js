@@ -15,8 +15,8 @@ db.connect((err) => {
         if (err) { console.error('Query failed:', err.message); return; }
         if (rows.length === 0) { console.log('No orders yet.'); return; }
 
-        const sep = '+----------+----------+------------------------+----------+--------+--------+---------+---------------------+';
-        const header = '| order_id | identity | product_name           | quantity |  price |  total | status  | order_time          |';
+        const sep    = '+----------+----------+------------------------+----------+--------+--------+---------+-------------------------+------------------------+';
+        const header = '| order_id | identity | product_name           | quantity |  price |  total | status  | order_time (HKT)        | order summary          |';
 
         // Group rows by order_id
         const groups = {};
@@ -29,24 +29,31 @@ db.connect((err) => {
         console.log(header);
         console.log(sep);
 
-        Object.values(groups).forEach((items, groupIndex) => {
-            let orderTotal = 0;
+        Object.values(groups).forEach((items) => {
+            const orderTotal = items.reduce((sum, r) => sum + Number(r.total), 0);
+            const status = items[0].payment_status || 'Paid';
+            const summaryText = `$${orderTotal.toFixed(2)} [${status}]`;
+            const totalWidth = 22;
+            const padLeft = Math.floor((totalWidth - summaryText.length) / 2);
+            const padRight = totalWidth - summaryText.length - padLeft;
+            const midIndex = Math.floor((items.length - 1) / 2);
+
             items.forEach((r, i) => {
-                const orderId  = i === 0 ? String(r.order_id).padStart(8)  : '        ';
-                const identity = i === 0 ? r.identity.padEnd(8)            : '        ';
+                const isMid    = i === midIndex;
+                const orderId  = isMid ? String(r.order_id).padStart(8) : '        ';
+                const identity = isMid ? r.identity.padEnd(8)           : '        ';
                 const name     = r.product_name.padEnd(22);
                 const qty      = String(r.quantity).padStart(8);
                 const price    = Number(r.price).toFixed(2).padStart(6);
                 const total    = Number(r.total).toFixed(2).padStart(6);
-                const status   = i === 0 ? (r.payment_status || 'Paid').padEnd(7) : '       ';
-                const time     = i === 0 ? r.order_time.toISOString().replace('T',' ').slice(0,19) : '                   ';
-                console.log(`| ${orderId} | ${identity} | ${name} | ${qty} | ${price} | ${total} | ${status} | ${time} |`);
-                orderTotal += Number(r.total);
+                const st       = isMid ? (r.payment_status || 'Paid').padEnd(7) : '       ';
+                const hkTime   = new Date(r.order_time.getTime() + 8 * 60 * 60 * 1000);
+                const time     = isMid ? hkTime.toISOString().replace('T',' ').slice(0,19) + ' HKT' : '                       ';
+                const summary  = isMid
+                    ? `${' '.repeat(padLeft)}${summaryText}${' '.repeat(padRight)}`
+                    : '                      ';
+                console.log(`| ${orderId} | ${identity} | ${name} | ${qty} | ${price} | ${total} | ${st} | ${time} | ${summary} |`);
             });
-            // Total row
-            const status = items[0].payment_status || 'Paid';
-            const totalStr = `ORDER TOTAL: $${orderTotal.toFixed(2)}   [${status}]`;
-            console.log(`| ${totalStr.padEnd(sep.length - 4)} |`);
             console.log(sep);
         });
     });
