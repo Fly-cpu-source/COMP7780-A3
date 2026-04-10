@@ -1,14 +1,14 @@
 # COMP7780 Assignment 2 — Cycle 3
 **Team:** Vitality · Team 3
 
-| No. | Name | Student ID | Role |
-|-----|------|-----------|------|
-| 1 | YANG Yanhang | 25409220 | Project Manager |
-| 2 | WU Feiyang | 25418491 | Developer |
-| 3 | ZHU Zhaoting | 25443631 | Developer |
-| 4 | ZHANG Xingjian | 25401556 | Analyst |
-| 5 | LI Cuijie | 25434837 | Analyst |
-| 6 | CHEN Hongshen | 25450913 | Tester |
+ Name | Student ID | Role |
+------|-----------|------|
+ YANG Yanhang | 25409220 | Project Manager |
+ WU Feiyang | 25418491 | Developer |
+ ZHU Zhaoting | 25443631 | Developer |
+ ZHANG Xingjian | 25401556 | Analyst |
+ LI Cuijie | 25434837 | Analyst |
+ CHEN Hongshen | 25450913 | Tester |
 
 ---
 
