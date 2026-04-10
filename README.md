@@ -49,7 +49,15 @@ source path/to/cycle3_db/11_create_user/create_user.sql
 
 This creates a database user `user99` with password `user99`.
 
-**2b. Create tables and insert sample data:**
+**2b. Create the database:**
+```
+mysql -u user99 -p
+source path/to/cycle3_db/22_create_db_table/create_db.sql
+```
+
+This drops (if exists) and recreates the `comp7780` database, with `user99` as the owner.
+
+**2c. Create tables and insert sample data:**
 ```
 use comp7780;
 source path/to/cycle3_db/22_create_db_table/create_tables.sql
