@@ -23,10 +23,16 @@ Make sure the following are installed on your machine before running:
 
 ## Step 1 — Start MySQL
 
-Open **CMD as Administrator** and start the MySQL service:
+Open **CMD as Administrator** and start the MySQL service.
 
+First, check your MySQL service name:
 ```
-net start mysql80
+sc query type= service state= all | findstr /i mysql
+```
+
+Then start it using your service name (e.g. `MySQL80`, `MySQL`, etc.):
+```
+net start <your_mysql_service_name>
 ```
 
 ---
