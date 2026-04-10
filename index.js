@@ -82,7 +82,7 @@ app.get('/check_out', function(req, res) {
     var responseText = '<!DOCTYPE html>';
     responseText += '<head><meta name="viewport" content="width=device-width, initial-scale=1">';
     responseText += '<meta http-equiv="X-UA-Compatible" content="IE=edge" /></head>';
-    responseText += '<body><script src="https://www.paypal.com/sdk/js?client-id=ATSWa9vavLRPYABa5DAFOb7d6xFXlYIfpC4eE0ML-fo4wvxD7MhswAQkklI625Mqnbudf6psDaPUC5mj">';
+    responseText += '<body><script src="https://www.paypal.com/sdk/js?client-id=ATSWa9vavLRPYABa5DAFOb7d6xFXlYIfpC4eE0ML-fo4wvxD7MhswAQkklI625Mqnbudf6psDaPUC5mj&locale=en_US">';
     responseText += '</script>';
 
     var con = mysql.createConnection({
