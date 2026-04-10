@@ -681,7 +681,6 @@
             .dish-info { width: 100%; }
         }
     </style>
-    <script src="https://www.paypal.com/sdk/js?client-id=ATikMUrZElhOyEC8czg9w6BrRZff4L5yHVpot9uCTBGCZP4eghgQ-EmEvB8_TMlF2YNfd2TJlnrAwTo6&currency=USD&locale=en_US"></script>
 </head>
 <body>
 
@@ -701,10 +700,11 @@
         </div>
         <div>
             <select id="customer-select" onchange="resetCart()">
-                <option value="">-- Select Identity --</option>
-                <option value="VIP">Guest 01 (VIP)</option>
-                <option value="Standard">Guest 02 (Standard)</option>
-                <option value="Faculty">Guest 03 (Faculty)</option>
+                <option value="">-- Select Customer --</option>
+                <option value="cust1">cust1</option>
+                <option value="cust2">cust2</option>
+                <option value="cust3">cust3</option>
+                <option value="cust4">cust4</option>
             </select>
         </div>
     </section>
@@ -732,7 +732,7 @@
                             <input type="number" id="qty-1" value="1" min="1" max="99" oninput="validateQty(this)" onblur="correctQty(this)">
                             <button onclick="updateQty('qty-1', 1)">+</button>
                         </div>
-                        <button class="add-btn" onclick="addToCart('Hakka Braised Pork', 66, 'qty-1')">Order Dish</button>
+                        <button class="add-btn" onclick="addToCart('Hakka Braised Pork', 66, 'qty-1', 1)">Order Dish</button>
                     </div>
                 </div>
             </div>
@@ -756,7 +756,7 @@
                             <input type="number" id="qty-2" value="1" min="1" max="99" oninput="validateQty(this)" onblur="correctQty(this)">
                             <button onclick="updateQty('qty-2', 1)">+</button>
                         </div>
-                        <button class="add-btn" onclick="addToCart('Honey Glazed Char Siu', 56, 'qty-2')">Order Dish</button>
+                        <button class="add-btn" onclick="addToCart('Honey Glazed Char Siu', 56, 'qty-2', 2)">Order Dish</button>
                     </div>
                 </div>
             </div>
@@ -780,7 +780,7 @@
                             <input type="number" id="qty-3" value="1" min="1" max="99" oninput="validateQty(this)" onblur="correctQty(this)">
                             <button onclick="updateQty('qty-3', 1)">+</button>
                         </div>
-                        <button class="add-btn" onclick="addToCart('Wok-Fried Beef', 78, 'qty-3')">Order Dish</button>
+                        <button class="add-btn" onclick="addToCart('Wok-Fried Beef', 78, 'qty-3', 3)">Order Dish</button>
                     </div>
                 </div>
             </div>
@@ -800,7 +800,7 @@
                     <span class="total-value">$<span id="final-total">0</span></span>
                 </div>
 
-                <button id="checkout-btn" class="checkout-btn" onclick="openModal()" disabled>Request Bill</button>
+                <button id="checkout-btn" class="checkout-btn" onclick="openCheckout()" disabled>Request Bill</button>
             </div>
 
             <div class="payment-methods">
@@ -836,8 +836,8 @@
             Total: $<span id="modal-total">0</span>
         </div>
 
-        <div class="modal-actions" style="flex-direction: column; align-items: stretch;">
-            <div id="paypal-button-container" style="margin-bottom: 12px;"></div>
+        <div class="modal-actions">
+            <button class="btn-confirm" onclick="proceedToCheckout()">Proceed to PayPal</button>
             <button class="btn-cancel" onclick="closeModal('checkout-modal')">Modify</button>
         </div>
     </div>
@@ -888,10 +888,10 @@
         }
     }
 
-    function addToCart(name, price, qtyId) {
+    function addToCart(name, price, qtyId, prodId) {
         const customer = document.getElementById('customer-select').value;
         if (!customer) {
-            alert("Please select a Guest Identity first.");
+            alert("Please select a Customer first.");
             document.querySelector('.customer-bar').scrollIntoView({behavior: 'smooth'});
             return;
         }
@@ -902,8 +902,12 @@
         if (existing) {
             existing.quantity += qty;
         } else {
-            cart.push({ name, price, quantity: qty });
+            cart.push({ name, price, quantity: qty, prodId: prodId });
         }
+
+        // Save to database via teacher's GET /cart route
+        fetch('/cart?prod_id=' + prodId + '&qty=' + qty + '&price=' + price + '&f_username=' + customer)
+            .catch(function(err) { console.error('Cart save failed:', err); });
 
         renderCart();
         document.getElementById(qtyId).value = 1;
@@ -975,75 +979,26 @@
         document.getElementById('modal-total').innerText = total;
 
         document.getElementById('checkout-modal').style.display = 'flex';
-        renderPayPalButton();
     }
 
     function closeModal(id) {
         document.getElementById(id).style.display = 'none';
     }
 
-    // Save order to MySQL and show success modal
-    function saveOrderAndConfirm() {
+    // Open checkout: show order summary modal first
+    function openCheckout() {
         const customer = document.getElementById('customer-select').value;
-        const items = cart.map(item => ({
-            name: item.name,
-            quantity: item.quantity,
-            price: item.price
-        }));
-
-        fetch('/order', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ customer, items })
-        })
-        .then(res => res.json())
-        .then(data => {
-            closeModal('checkout-modal');
-            document.getElementById('order-id-display').innerText = data.success ? 'Order ID: #' + data.orderId : '';
-            document.getElementById('success-modal').style.display = 'flex';
-        })
-        .catch(() => {
-            closeModal('checkout-modal');
-            document.getElementById('order-id-display').innerText = '';
-            document.getElementById('success-modal').style.display = 'flex';
-        });
+        if (!customer) {
+            alert("Please select a Customer first.");
+            return;
+        }
+        openModal();
     }
 
-    // Render PayPal button when modal opens
-    let paypalRendered = false;
-    function renderPayPalButton() {
-        if (paypalRendered) return;
-        paypalRendered = true;
-
-        paypal.Buttons({
-            style: {
-                color: 'gold',
-                shape: 'rect',
-                label: 'pay',
-                height: 45
-            },
-            createOrder: function(data, actions) {
-                const total = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
-                return actions.order.create({
-                    purchase_units: [{
-                        description: 'HKBU Campus Bistro Order',
-                        amount: {
-                            value: total.toFixed(2),
-                            currency_code: 'USD'
-                        }
-                    }]
-                });
-            },
-            onApprove: function(data, actions) {
-                return actions.order.capture().then(function() {
-                    saveOrderAndConfirm();
-                });
-            },
-            onError: function(err) {
-                alert('Payment failed. Please try again.');
-                console.error(err);
-            }
-        }).render('#paypal-button-container');
+    // Redirect to teacher's /check_out route (which renders PayPal)
+    function proceedToCheckout() {
+        const customer = document.getElementById('customer-select').value;
+        window.location.href = '/check_out?f_check_out_username=' + customer;
     }
 
     function resetAll() {
